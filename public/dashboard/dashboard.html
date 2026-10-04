@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="2026 Junior Santos">
+    <meta name="copyright" content="2026 Empresa. Todos os direitos reservados">
+    <meta name="license" content="MIT + Modificações proprietárias substancias">
+    <meta name="version" content="2.0.1">
+    <meta name="build-data" content="2026-23-09">
+    <meta name="compliance" content="LGPD, Lei 9.610/1998, Auditoria Financeira">
+
+    <title>Financeiro - Enterprise Edition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+    <!-- Chart.js - Licença MIT (aviso obrigatório mantido) -->
+<!--
+    Chart.js v4.x - https://www.chartjs.org
+    Copyright (c) 2014-2024 Chart.js Contributors
+    Licenciado sob a Licença MIT
+    Aviso de direitos autorais original preservado conforme exigido pela MIT.
+-->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body {
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Marca d'água de autoria (proteção legal)*/
+        body::after {
+            content: "© 2026 Empresa XYZ — v2.0-enterprise";
+            position: fixed;
+            bottom: 6px;
+            right: 10px;
+            font-size: 0.68rem;
+            color: #475569;
+            pointer-events: none;
+            z-index: 9999;
+            user-select: none;
+        }
+
+        /* Selo de conformidade*/
+        .compliance-bar {
+            position: fixed;
+            top: 0;
+            left: 240px;
+            right: 0;
+            background: linear-gradient(90deg, #64e3b5, #065f46);
+            color: #6ee7b7;
+            font-size: 0.72rem;
+            padding: 4px 16px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 50;
+            border-bottom: 1px solid #10b981;
+        }
+        .compliance-bar span {opacity: 0.9;}
+
+        /* Sidebar*/
+        .sidebar {
+            width: 240px;
+            background: #1e293b;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction:  column;
+            gap: 8px;
+            position: fixed;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            z-index: 60;
+            /* transform: translateX(-100%); */
+            transition: transform 0.3s;
+        }
+
+        .sidebar h2 {
+            color: #38bdf8;
+            margin-bottom: 24px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar a {
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 12px 14px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background: #334155;
+            color: #38bdf8;
+        }
+
+        /* .sidebar.open {
+            transform: translateY(0);
+        } */
+        /* Main*/
+        .main {
+            margin-left: 240px;
+            padding: 48px 24px 24px;
+            width: calc(100% - 240px);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .header h1 {font-size: 1.6rem;}
+        .header p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #1e293b;
+            padding: 8px 16px;
+            border-radius: 30px;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #38bdf8, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Cards*/
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 14px;
+            border-left: 4px solid #38bdf8;
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .card:hover {transform: translateY(-4px); }
+        .card.receita {border-color: #10b981; }
+        .card.despesa {border-color: #ef4444; }
+        .card.investimento {border-color: #f59e0b;}
+        .card.saldo {border-color: #8b5cf6;}
+
+        .card-label {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-value {
+            font-size: 1.7rem;
+            font-weight: 700;
+            margin: 10px 0 6px;
+        }
+
+        .card-change {
+            font-size: 0.82;
+            color: #10b981;
+        }
+
+        .card-change.neg {color: #ef4444}
+
+        /* Badge de validação nos cards */
+        .validation-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: help;
+        }
+
+        .validation-badge.ok {background: #064e3b; color: #6ee7b7;}
+        .validation-badge.warn {background: #78350f; color: #fcd34d;}
+        .validation-badge.error {background: #7f1d1d; color: #6ee7b7;}
+
+        /* Grid de gráficos */
+        .grid-charts {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .panel {
+            background: #1e293b;
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .panel h3 {
+            font-size: 1rem;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel h3 span {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            font-weight: normal;
+        }
+
+        /* Painel de auditoria */
+        .audit-panel {
+            background: #1e293b;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid #334155;
+        }
+
+        .audit-panel h3{
+            font-size: 1rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .audit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .audit-item {
+            background: #0f172c;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #38bdd8;
+            font-size: 0.82rem;
+        }
+
+        .audit-item.ok {border-color: #10c981;}
+        .audit-item.warn {border-color: #f59e0b;}
+        .audit-item.error {border-color: #ef4444;}
+        .audit-item strong {display: block; margin-bottom: 4px; color: #e2e8f0;}
+        .audit-item small {color: #94a3b8;}
+
+        /* Tabela*/
+        .table-panel {overflow-x: auto; }
+        table {width: 100%; border-collapse: collapse;}
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+            font-size: 0.9rem;
+        }
+
+        .badge.entrada { background: #064e3b; color: #6ee7b7; }
+        .badge.saida { background: #7f1d1d; color: #fca5a5; }
+
+        /* Botão adicionar */
+        .btn-add {
+            background: #38bdf8;
+            color: #0f172a;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .btn-add:hover { background: #0ea5e9; }
+        .btn-audit {
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: 8px;
+        }
+        .btn-audit:hover { background: #7c3aed; }
+
+        /* Modal */
+        .modal-bg {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-bg.active { display: flex; }
+        .modal {
+            background: #1e293b;
+            padding: 24px;
+            border-radius: 14px;
+            width: 100%;
+            max-width: 420px;
+        }
+        .modal h3 { margin-bottom: 18px; }
+        .modal input, .modal select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        .modal input:focus, .modal select:focus {
+            outline: none;
+            border-color: #38bdf8;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .modal-actions button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-cancel { background: #334155; color: #e2e8f0; }
+        .btn-save { background: #38bdf8; color: #0f172a; }
+
+        /* Responsivo */
+        @media (max-width: 900px) {
+            .grid-charts { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 720px) {
+            .sidebar { transform: translateX(-100%); }
+            .main { margin-left: 0; width: 100%; padding-top: 40px; }
+            .compliance-bar { left: 0; }
+        }
+
+        .toggle-menu {
+            display: none;
+            background: none;
+            border: none;
+            color: #e2e8f0;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        @media (max-width: 720px) {
+            .toggle-menu { display: block; }
+        }
+
+        /* Rodapé legal */
+        .legal-footer {
+            margin-top: 24px;
+            padding: 16px;
+            background: #1e293b;
+            border-radius: 14px;
+            font-size: 0.75rem;
+            color: #64748b;
+            line-height: 1.6;
+            border-left: 3px solid #38bdf8;
+        }
+        .legal-footer strong { color: #94a3b8; }
+
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+    BARRA DE CONFORMIDADE (aspecto 1: avisos legais visíveis)
+    ============================================================ -->
+    <div class="compliance-bar">
+        <span>🔒 Sistema auditado — LGPD compliant</span>
+        <span>© 2026 Empresa XYZ | Licença: MIT + Proprietária | Build 2.2.1</span>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <h2>💰 FinDash</h2>
+        <a href="#" class="active">📊 Dashboard</a>
+        <a href="#"> 💳 Transações </a>
+        <a href="#"> 📈 Investimentos </a>
+        <a href="#"> 🎯 Metas </a>
+        <a href="#"> 📄 Relatórios </a>
+        <a href="#"> 🔍 Auditoria </a>
+        <a href="#"> ⚙️ Configurações </a>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+        <div class="header">
+            <div>
+                <button class="toggle-menu" onclick="document.getElementById('sidebar').classList.toggle('active')">☰</button>
+                <h1>Dashboard Financeiro</h1>
+                <p id="dataAtual"></p>
+                </div>
+                <div class="user-info">
+                    <div class="avatar"></div>
+                <div>
+                    <div style="font-size:0.9rem; font-weight:600;">carregando...</div>
+                    <div style="font-size:0.75rem; color:#94a3b8;">Plano Enterprise</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cards -->
+        <section class="cards">
+
+            <div class="card receita" data-metric="receitas">
+                <div class="card-label">📥 Receitas <span>+12</span></div>
+                <div class="card-value" id="totalReceitas">R$ 0</div>
+                <div class="cadr-change">↑ Aumento este mês</div>
+            </div>
+
+            <div class="card despesa" data-metric="despesa">
+                <div class=" card-label">📤 Despesas<span>-5%</span></div>
+                <div class="card-value" id="totalDespesas"> R$0</div>
+                <div class="card-change neg"> ↓ Redução este mês</div>
+            </div>
+
+            <div class="card investimento" data-metric="investimento">
+                <div class="card-label">📈 Investimentos <span>+8%</span></div>
+                <div class="card-value" id="totalInvestimentos">R$ 0</div>
+                <div class="card-change">↑ Crescimento</div>
+            </div>
+
+            <div class="card saldo" data-metric="saldo">
+                <div class="card-label">💵 Saldo Total</div>
+                <div class="card-value" id="saldoTotal">R$ 0</div>
+                <div class="card-change">Balanço do mês</div>
+            </div>
+
+        </section>
+
+        <!-- ============================================================
+            PAINEL DE AUDITORIA (aspecto 3: validação determinística)
+            ============================================================ -->
+        <section class="audit-panel">
+            <h3>
+                🔍 Painel de Validação Determinística
+                <button class="btn-audit" onclick="executarAuditoria()">Revalidar Agora</button>
+            </h3>
+            <div class="audit-grid" id="auditGrid">
+                <!-- Preenchido via JS -->
+            </div>
+        </section>
+
+        <!--Graficos-->
+        <section class="grid-charts">
+
+            <div class="panel">
+                <h3>Flux de Caixa <span>Último 6 messes</span></h3>
+                <canvas id="fluxoChart" height="110"></canvas>
+            </div>
+
+            <div class="panel">
+                <h3>Despesas por Categoria</h3>
+                <canvas id="categoriaChart" height="180"></canvas>
+            </div>
+        </section>
+
+        <!-- Tabela -->
+        <section class="panel table-panel">
+            <h3>
+                Transações Recentes
+                <div>
+                    <button class="btn-add" onclick="abrirModal()">+ Nova Transação</button>
+                </div>
+            </h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Categoria</th>
+                        <th>Tipo</th>
+                        <th style="text-align: right;">Valor</th>
+                        <th style="text-align: center;">Validação</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaTranscoes"></tbody>
+            </table>
+        </section>
+        <!-- ============================================================
+            RODAPÉ LEGAL (aspecto 1: informações de licença e autoria)
+            ============================================================ -->
+        <footer class="legal-footer">
+            <strong>© 2026 Empresa XYZ — CNPJ 00.000.000/0001-00</strong>
+            Todos os direitos reservados.<br>
+            Este software incorpora modificações substanciais proprietárias sobre código original gerado por IA,
+            configurando obra derivada protegida nos termos da <strong>Lei 9.610/1998</strong>.<br>
+            Componentes de terceiros: <strong>Chart.js</strong> — Licença MIT (aviso original preservado).<br>
+            <em>Nenhum dado é enviado a servidores externos. Processamento 100% local conforme LGPD.</em>
+        </footer>
+    </main>
+    <!-- Modal -->
+    <div class="modal-bg" id="modal">
+        <div class="modal">
+
+            <h3>Nova Transação</h3>
+
+            <input type="text" id="desc" placeholder="Descrição">
+            <input type="number" id="valor" placeholder="Valor (R$)" step="0.01">
+
+            <select id="tipo">
+                <option value="entrada">Entrada (Receita)</option>
+                <option value="saida">Saída (despesa)</option>
+            </select>
+
+            <select id="categoria">
+                <option>Salário</option>
+                <option>Alimentação</option>
+                <option>Trasnporte</option>
+                <option>Moradia</option>
+                <option>Lazer</option>
+                <option>Investimentos</option>
+                <option>Outros</option>
+            </select>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+                <button class="btn-save" onclick="salvarTransacao()">Salvar</button>
+            </div>
+        </div>
+    </div>
+    <script src="../js/finan.js"></script>
+</body>
+</html>

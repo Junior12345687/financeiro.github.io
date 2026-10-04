@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana,sans-serif;
+        }
+
+        body{
+            background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .cad-container{
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 40px 35px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 8px 20px 40px rgba(6, 7, 201, 0.37);
+            transition: transform 0.3s ease;
+        }
+
+        .cad-container:hover{
+            transform: scale(1.01);
+        }
+
+        .cad-header{
+            text-align: center;
+            margin-bottom: 30px;
+            color: #fff;
+        }
+
+        .cad-header i{
+            font-size: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 50%;
+            box-shadow:  2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .cad-header h1{
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .cad-header p {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .input-group{
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .input-gruop i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgb(255, 255, 255, 0.7);
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px 15px 15px 50px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            color: #fff;
+            outline: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 300;
+        }
+
+        .input-group input:focus {
+            border-color: #fff;
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .input-group input:focus + i {
+            color: #fff;
+        }
+
+        /* Lembrar + esqueci a senha */
+        .cad-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        .cad-options label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .cad-options input[type="checkbox"]{
+            accent-color: #764ba2;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .cad-options a {
+            color:rgb(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .cad-options a:hover{
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        .btn-cad {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 50px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba( 245, 87, 108, 0.4);
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .btn-cad:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(245, 87, 108, 0.5);
+            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+        }
+
+        .btn-cad:active {
+            transform: scale(0.98);
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        .signup-link a {
+            color: #fff;
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .signup-link a:hover {
+            border-color: #fff;
+        }
+
+        /* Responsividade */
+        @media (max-width: 480px) {
+            .cad-container {
+                padding: 30px 20px;
+            }
+            .cad-header h1 {
+                font-size: 24px;
+            }
+            .input-group input {
+                padding: 14px 18px 14px 45px;
+                font-size: 15px;
+            }
+            .cad-options {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cad-container">
+        <div class="cad-header">
+            <i class="fas fa-lock"></i>
+            <h1>Bem-vindo</h1>
+            
+        </div>
+
+        <!-- Mensagem de feedback -->
+        <div id="message" class="message"></div>
+
+        <form  id="Form-cadastro">
+
+            <div class="input-group">
+                <input type="Nome" id="name" placeholder="Seu nome">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="input-group">
+                <input type="email" id="email" placeholder="Seu e-mail" required />
+                <i class="fas fa-envelope"></i>
+            </div>
+
+            <div class="input-group">
+                <input type="password" id="password" placeholder="Sua senha" required />
+                <i class="fas fa-key"></i>
+            </div>
+
+            <div class="input-group">
+                <input type="password" id="confirma-senha" placeholder="Confirmar senha" required />
+                <i class="fas fa-key"></i>
+            </div>
+
+            <button type="submit" class="btn-cad" id="cadBtn">
+                <i class="fas fa-sign-in-alt"></i> Cadastra
+            </button>
+        </form>
+
+    </div>
+
+</body>
+</html>
