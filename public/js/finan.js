@@ -35,7 +35,7 @@ const MotorCalculo = {
         );
     },
 
-    auditar(transacoes, investimentos, valoresExibidos){
+    async auditar(transacoes, investimentos, valoresExibidos){
         const resultados = [];
 
         const recCalc = this.calcularReceitas(transacoes);
@@ -64,12 +64,24 @@ const MotorCalculo = {
         //Consistência: nº de transações
         const duplicadas = this._detectarDuplicatas(transacoes);
         resultados.push({
-            metrica: 'Integridade de Dados',
+        metrica: 'Integridade de Dados',
             status: duplicadas.length === 0 ? 'ok' : 'error',
             detalhe: duplicadas.length === 0
-            ? `${transacoes.length} transações, sem duplicatas`
-            : `${duplicadas.length} possivel(is) duplicata(s) detectada(s)`
+                ? `${transacoes.length} transações, sem duplicatas`
+                : `${duplicadas.length} possível(is) duplicata(s) detectada(s)`
         });
+
+        if(MotorFraude.model) {
+            const anomalias = await Promise.all(
+                transacoes.map(t => MotorFraude.detectar(t))
+            );
+            const suspeitas = anomalias.filter(a => a.suspeita).length;
+            resultados.push({
+                metrica: 'IA - Detecção de Anomalias',
+                status: suspeitas > 0 ? 'warn' : 'ok',
+                detalhe: `${suspeitas} transações suspeitas detectadas`
+            });
+        }
 
         return resultados;
     },
@@ -172,8 +184,8 @@ function calcularTotais(){
     return valoresExibidos;
 }
 
-function renderAuditoria(){
-    const resultados = MotorCalculo.auditar(transacoes, investimentos, valoresExibidos);
+async function renderAuditoria(){
+    const resultados = await MotorCalculo.auditar(transacoes, investimentos, valoresExibidos);
     const grid = document.getElementById('auditGrid');
     grid.innerHTML = '';
 
@@ -198,9 +210,9 @@ function renderAuditoria(){
     });
 };
 
-function executarAuditoria(){
+async function executarAuditoria(){
     calcularTotais();
-    renderAuditoria();
+    await  renderAuditoria();
     renderTabela();
     console.log('%c🔍 Auditoria executada em ' + new Date().toLocaleTimeString(),
                 'color:#8b5cf6;font-weight:bold;');
@@ -311,10 +323,85 @@ document.getElementById('modal').addEventListener('click', e => {
 });
 
 /* ============================================================
+    MOTOR DE IA LOCAL (Transformers.js)
+   ============================================================ */
+const MotorIA = {
+    classificador: null,
+    sumarizador: null,
+
+    async init() {
+        this.classificador = await window.pipeline(
+            'zero-shot-classification',
+            'Xenova/mDeBERTa-v3-base-mnli-xnli'
+        );
+        console.log('%c🧠 IA local carregada', 'color:#8b5cf6');
+    },
+
+    async classificarCategoria(descricao) {
+        const categorias = [
+            'Alimentação', 'Transporte', 'Moradia',
+            'Lazer', 'Investimentos', 'Outros'
+        ];
+        // Implementação da classificação
+        const r = await this.classificador(descricao, categorias);
+        return { categoria: r.labels[0], confianca: r.scores[0] };
+    },
+
+    detectarAnomalia(valor, transacoes) {
+        const valores = transacoes.map(t => t.valor);
+        const media = valores.reduce((a, b) => a + b, 0) / valores.length;
+        const desvio = Math.sqrt(
+            valores.reduce((s, v) => s + (v - media) ** 2, 0) / valores.length
+        );
+
+        const z = Math.abs((valor - media) / (desvio || 1));
+        return {anomalia: z > 2.5, z: z.toFixed(2)}; // Considera anomalia se Z-score > 2
+    }
+};
+
+document.getElementById('desc').addEventListener('blur', async (e) => {
+    const texto = e.target.value.trim();
+    if(texto.length < 3) return; // Ignora textos muito curtos
+
+    const {categoria, confianca} = await MotorIA.classificarCategoria(texto);
+    if (confianca > 0.5) {
+        document.getElementById('categoria').value = categoria;
+        console.log(`🤖 Sugerido: ${categoria} (${(confianca * 100).toFixed(1)}%)`);
+    }
+});
+
+const MotorFraude = {
+    async treinar(historico) {
+        const model = tf.sequential();
+        model.add(tf.layers.dense({ inputShape: [3], units: 8, activation: 'relu' }));
+        model.add(tf.layers.dense({ units: 4, activation: 'sigmoid' }));
+        model.compile({optimizer: 'adam', loss: 'mse'});
+
+        const xs = tf.tensor2d(historico.map(t => [
+            t.valor / 10000, // Normaliza valor
+            new Date(t.data).getMonth() / 6, // Normaliza mês
+            t.tipo === 'entrada' ? 1 : 0 // Entrada=1, Saída=0
+        ]));
+
+        await model.fit(xs, xs, {epochs: 50, verbose: 0});
+        this.model = model;
+        console.log('🎯  Modelo de anomalias treinado');
+    },
+
+    async detectar(t){
+        const x = tf.tensor2d([[t.valor / 10000, new Date(t.data).getDay()/6, t.tipo === 'entrada' ? 1 : 0]]);
+        const pred = this.model.predict(x);
+        const erro = tf.losses.meanSquaredError(x, pred).dataSync()[0];
+        return {suspeita: erro > 0.15, score: erro.toFixed(3)}; // Considera suspeita se erro > 0.15
+    }
+};
+
+
+/* ============================================================
     INICIALIZAÇÃO
    ============================================================ */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     renderTabela();
     calcularTotais();
-    renderAuditoria();
+    await renderAuditoria();
 });

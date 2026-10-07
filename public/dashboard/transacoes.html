@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="FinDash">
+    <meta name="copyright" content="2026 Empresa. Todos os direitos reservados">
+    <meta name="license" content="MIT + Modificações proprietárias substanciais">
+    <meta name="version" content="2.2.1">
+    <meta name="build-data" content="2026-23-09">
+    <meta name="compliance" content="LGPD, Lei 9.610/1998, Auditoria Financeira">
+
+
+    <title>Transações - Enterprise Edition</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="../css/style.css" />
+
+</head>
+<body>
+    <div class="compliance-bar">
+        <span>🔒 Sistema auditado — LGPD compliant</span>
+        <span>© 2026 Empresa XYZ | Licença: MIT + Proprietária | Build 2.2.1</span>
+    </div>
+
+    <aside class="sidebar" id="sidebar">
+        <h2>💰 FinDash</h2>
+        <a href="dashboard.html">📊 Dashboard</a>
+        <a href="transacoes.html" class="active"> 💳 Transações </a>
+        <a href="#"> 📈 Investimentos </a>
+        <a href="#"> 🎯 Metas </a>
+        <a href="#"> 📄 Relatórios </a>
+        <a href="#"> 🔍 Auditoria </a>
+        <a href="#"> ⚙️ Configurações </a>
+    </aside>
+
+    <main class="main">
+
+        <div class="header">
+
+            <div>
+                <button class="toggle-menu" onclick="document.getElementById('sidebar').classList.toggle('active')">☰</button>
+                <h1>Dashboard Financeiro</h1>
+                <p id="dataAtual"></p>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">👤</div>
+                <div>
+                    <div style="font-size:0.9rem; font-weight:600;">carregando...</div>
+                    <div style="font-size:0.75rem; color:#94a3b8;">Plano Enterprise</div>
+                </div>
+            </div>
+
+        </div>
+
+        <section class="cards">
+
+            <div class="card receita">
+                <div class="card-label">📥 Total Entradas</div>
+                <div class="card-value" id="totalEntradas">R$ 0,00</div>
+            </div>
+
+            <div class="card despesa">
+                <div class="card-label">📤 Total Saídas</div>
+                <div class="card-value" id="totalSaidas">R$ 0,00</div>
+            </div>
+
+            <div class="card saldo">
+                <div class="card-label">💵 Saldo Líquido</div>
+                <div class="card-value" id="saldoTotal">R$ 0,00</div>
+            </div>
+
+            <div class="card total">
+                <div class="card-label">📊 Nº de Transações</div>
+                <div class="card-value" id="totalGeral">0</div>
+            </div>
+
+        </section>
+
+        <section class="filters-panel">
+
+            <div class="filter-group">
+                <label>🔎 Buscar </label>
+                <input type="text" id="filtroBusca" placeholder="Descrição ou Categoria....">
+            </div>
+
+            <div class="filter-group">
+                <label>Tipo</label>
+                <select id="filtroTipo">
+                    <option value="">Todos</option>
+                    <option value="entrada">Entrada</option>
+                    <option value="saida">Saída</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+
+                <label>Categoria</label>
+                <select id="filtroCategoria">
+                    <option value="">Todas</option>
+                    <option value="alimentacao">Alimentação</option>
+                    <option value="transporte">Transporte</option>
+                    <option value="moradia">Moradia</option>
+                </select>
+
+            </div>
+
+            <div class="filter-group">
+
+                <label>Data Inicial</label>
+                <input type="date" id="filtroDataIni">
+
+            </div>
+
+            <div class="filter-group">
+
+                <label>Data Final</label>
+                <input type="date" id="filtroDataFim">
+
+            </div>
+
+            <div class="filter-group">
+
+                <label>&nbsp;</label>
+                <button class="btn btn-secondary" onclick="limparFiltros()">
+                    <i class="fas fa-eraser"></i> Limpar Filtros
+                </button>
+
+            </div>
+
+        </section>
+
+        <section class="table-panel">
+
+            <div class="table-header">
+                <h3><i class="fas fa-list"></i> Lista de Transações</h3>
+                <div class="table-actions">
+
+                    <button class="btn btn-success" onclick="abrirModal()">
+                        <i class="fas fa-plus"></i> Nova Transação
+                    </button>
+
+                    <button class="btn btn-secondary" onclick="exportarCSV()">
+                        <i class="fas fa-file-csv"></i> Exportar CSV
+                    </button>
+
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th data-sort="data">Data <span class="sort-icon">↕</span></th>
+                            <th data-sort="descricao">Descrição <span class="sort-icon">↕</span></th>
+                            <th data-sort="categoria">Categoria <span class="sort-icon">↕</span></th>
+                            <th data-sort="tipo">Tipo <span class="sort-icon">↕</span></th>
+                            <th data-sort="valor">Valor <span class="sort-icon">↕</span></th>
+                            <th style="text-align: center;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaTransacoes"></tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                <div class="pagination-info" id="paginationInfo">Mostrando 0 de 0</div>
+                <div class="pagination-controls" id="paginationControls"></div>
+            </div>
+        </section>
+
+        <footer class="legal-footer">
+            <strong>© 2026 Empresa XYZ — CNPJ 00.000.000/0001-00</strong>
+            Todos os direitos reservados.<br>
+            Este software incorpora modificações substanciais proprietárias sobre código original gerado por IA,
+            configurando obra derivada protegida nos termos da <strong>Lei 9.610/1998</strong>.<br>
+            <em>Nenhum dado é enviado a servidores externos. Processamento 100% local conforme LGPD.</em>
+        </footer>
+    </main>
+
+    <div class="modal-bg" id="modal">
+        <div class="modal">
+            <h3 id="modalTitle">Nova Transação</h3>
+
+            <label>Descrição</label>
+            <input type="text" id="desc" placeholder="Ex: Salário mensal">
+
+            <label>Valor (R$)</label>
+            <input type="number" id="valor" placeholder="Ex: 0.00" step="0.01" min="0.01">
+
+            <label>Tipo</label>
+            <select id="tipo">
+                <option value="entrada">Entrada</option>
+                <option value="saida">Saída</option>
+            </select>
+
+            <label>Categoria</label>
+            <select id="categoria">
+                <option>Salário</option>
+                <option>Alimentação</option>
+                <option>Transporte</option>
+                <option>Moradia</option>
+                <option>Lazer</option>
+                <option>Investimentos</option>
+                <option>Sáude</option>
+                <option>Educação</option>
+                <option>Outros</option>
+            </select>
+
+            <label>Data</label>
+            <input type="date" id="data">
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
+                <button class="btn btn-primary" id="salvarBtn">Salvar</button>
+            </div>
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/transacoes.js"></script>
+
+</body>
+</html>
