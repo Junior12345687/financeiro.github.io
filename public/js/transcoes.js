@@ -142,3 +142,80 @@ function renderizarTabela() {
     
     renderizarPaginacao(totalPaginas);
 }
+
+function renderizarPaginacao(totalPaginas){
+    const controls = document.getElementById('paginationControls');
+    let html = `<button class="page-btn" onclick="irParaPagina(${paginaAtual - 1})" ${paginaAtual === 1 ? 'disabled' : ''}>‹</button>`;
+
+    const maxBotoes = 5;
+    let start = Math.max(1, paginaAtual - Math.floor(maxBotoes / 2));
+    let end = Math.min(totalPaginas, start + maxBotoes - 1);
+    if(end  - start < maxBotoes - 1 ) start = Math.max(1, end - maxBotoes + 1);
+
+    if(start > 1){
+        html += `<button class="page-btn" onclick="irParaPagina(1)">1</button>`;
+        if (start > 2) html += `<span style="color:#64748b; padding:0 4px;">…</span>`;
+    }
+
+    for(let i = start; i <= end; i++){
+        html += `<button class="page-btn ${i === paginaAtual ? 'active' : ''}"
+            onclick="irParaPagina(${i})">${i}</button>`;
+    }
+
+    if(end < totalPaginas){
+        if (end < totalPaginas - 1) html += `<span style="color:#64748b; padding:0 4px;">…</span>`;
+            html += `<button class="page-btn" onclick="irParaPagina(${totalPaginas})">${totalPaginas}</button>`;
+    }
+
+    html += `<button class="page-btn" onclick="irParaPagina(${paginaAtual + 1})" ${paginaAtual === totalPaginas ? 'disabled' : ''}>›</button>`;
+    controls.innerHTML = html;
+
+}
+
+function irParaPagina(p){
+    const totalPaginas = Math.ceil(transacoesFiltradas.length / itensPorPagina) || 1;
+    if(p < 1 || p > totalPaginas) return;
+    paginaAtual = p;
+    renderizarTabela();
+}
+
+function atualizarResumo(){
+    const entradas = transacoesFiltradas.filter(t => t.tipo === 'entrada')
+        .reduce((s, t) => s + parseFloat(t.valor), 0);
+    const saidas = transacoesFiltradas.filter(t => t.tipo === 'saida')
+        .reduce((s, t) => s + parseFloat(t.valor), 0);
+    const saldo = entradas - saidas;
+
+    document.getElementById('resumoEntradas').textContent = formatarMoeda(entradas);
+    document.getElementById('resumoSaidas').textContent = formatarMoeda(saidas);
+    document.getElementById('resumoSaldo').textContent = formatarMoeda(saldo);
+    document.getElementById('resumoSaldo').style.color = saldo >= 0 ? '#10b981' : '#ef4444';
+    document.getElementById('resumoSaldo').textContent = transacoesFiltradas.length;
+}
+
+function abrirModal(id = null){
+    transcoeEditandoId = id;
+    const titulo = document.getElementById('modalTitulo');
+
+    if(id){
+        const t = transacoes.find(x => x.id === id);
+        if (!t) return;
+        titulo.textContent = 'Editar Transação';
+        document.getElementById('desc').value = t.descricao;
+        document.getElementById('valor').value = t.valor;
+        document.getElementById('tipo').value = t.tipo;
+        document.getElementById('categoria').value = t.categoria;
+        document.getElementById('data').value = t.data;
+    } else {
+        titulo.textContent = 'Nova Transção';
+        document.getElementById('desc').value = '';
+        document.getElementById('valor').value = '';
+        document.getElementById('tipo').value = 'entrada';
+        document.getElementById('categoria').valor = 'Salário';
+        document.getElementById('data').value = new Date().toDateString().split('T')[0];
+    }
+
+    document.getElementById('modal').classList.add('active');
+    setTimeout(() => document.getElementById('desc').focus(), 100);
+}
+
