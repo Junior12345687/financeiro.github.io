@@ -101,6 +101,17 @@ function aplicarFiltros() {
     
 }
 
+function limparFiltros() {
+    ['filtroBusca', 'filtroTipo', 'filtroCategoria', 'filtroDataIni', 'filtroDataFim']
+        .forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return console.warn('ID não encontrado:', id);
+            if (el.tagName === 'SELECT') el.selectedIndex = 0;
+            else el.value = '';
+        });
+    aplicarFiltros();
+}
+
 function renderizarTabela() {
     const tbody = document.getElementById('tabelaTransacoes');
     const total = transacoesFiltradas.length;

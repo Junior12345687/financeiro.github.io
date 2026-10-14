@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="2026 Junior Santos">
+    <meta name="compliance" content="LGPD, Lei 9.610/1998">
+    <title>Investimentos - Enterprise Edition</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="../css/style.css" />
+
+</head>
+<body>
+
+    <div class="compliance-bar">
+        <span>🔒 Sistema auditado — LGPD compliant</span>
+        <span>© 2026 Empresa XYZ | Licença: MIT + Proprietária | Build 2.2.1</span>
+    </div>
+
+    <aside class="sidebar" id="sidebar">
+        <h2>💰 FinDash</h2>
+        <a href="dashboard.html">📊 Dashboard</a>
+        <a href="transacoes.html">💳 Transações</a>
+        <a href="investimento.html" class="active">📈 Investimentos</a>
+        <a href="metas.html">🎯 Metas</a>
+        <a href="relatorios.html">📄 Relatórios</a>
+        <a href="auditoria.html">🔍 Auditoria</a>
+        <a href="configuracoes.html">⚙️ Configurações</a>
+    </aside>
+
+    <main class="main">
+        <div class="header">
+            <div>
+                <button class="toggle-menu" onclick="document.getElementById('sidebar').classList.toggle('active')">☰</button>
+                <h1>Dashboard Financeiro</h1>
+                <p id="dataAtual"></p>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">👤</div>
+                <div>
+                    <div style="font-size:0.9rem; font-weight:600;">carregando...</div>
+                    <div style="font-size:0.75rem; color:#94a3b8;">Plano Enterprise</div>
+                </div>
+            </div>
+        </div>
+        <section class="placeholder-screen">
+            <i class="fas fa-chart-line"></i>
+            <h2>Módulo de Investimentos</h2>
+            <p>Em breve: acompanhe sua carteira, rentabilidade e alocação de ativos em tempo real.</p>
+        </section>
+
+        <!-- Cards de resumo-->
+        <section class="cards">
+            <div class="card investimento">
+                <div class="card-label">💼 Total Investido</div>
+                <div class="card-value" id="totalInvestido">R$ 0,00</div>
+            </div>
+
+            <div class="card receita">
+                <div class="card-label">📈 Valor Atual</div>
+                <div class="card-label" id="">R$ 0,00</div>
+            </div>
+
+            <div class="card saldo">
+                <div class="card-label">💰 Rentabilidade</div>
+                <div class="card-value" id="rentabilidade">R$ 0,00</div>
+            </div>
+
+            <div class="card total">
+                <div class="card-label">📊 Ativos</div>
+                <div class="card-value" id="qtdAtivos">0</div>
+            </div>
+        </section>
+
+        <!--Graficos-->
+        <section class="grid-charts">
+            <div class="painel">
+                <h3>Evolução da Carteira <samp>Últimos 6 meses</samp></h3>
+                <canvas id="alocacaoChart" height="110"></canvas>
+            </div>
+        </section>
+
+        <!--Tabela de ativos-->
+        <section class="table-panel">
+
+            <div class="table-header">
+
+                <h3><i class="fas fa-coins"></i>Meus Ativos</h3>
+                <div class="table-actions">
+                    <button class="btn btn-success" onclick="abrirModalInvestimento()">
+                        <i class="fas fa-plus"></i> Novo Ativo
+                    </button>
+
+                    <button class="btn btn-secondary" onclick="exportarCSVInvestimentos()">
+                        <i class="fas fa-csv"></i> Exportat CSV
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Aivo</th>
+                            <th>Classe</th>
+                            <th style="text-align: right;">Investido</th>
+                            <th style="text-align: right;">Valor Atual</th>
+                            <th style="text-align: right;">Rentab.</th>
+                            <th style="text-align: right;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaInvestimentos"></tbody>
+                </table>
+            </div>
+
+        </section>
+
+        <footer class="leagal-footer">
+            <strong>© 2026 Empresa XYZ — CNPJ 00.000.000/0001-00</strong>
+            Todos os direitos reservados.<br>
+            <em>Nenhum dado é enviado a servidores externos. Processamento 100% local conforme LGPD.</em>
+        </footer>
+    </main>
+
+    <!--Modal-->
+    <div class="modal-bg" id="modalInvestimento">
+
+        <div class="modal">
+            <h3 id="modalTituloInvet">Novo Ativo</h3>
+            <label>Nome da Ativo</label>
+            
+            <input type="text" id="invNome" placeholder="Ex: PETR4, Tesouro Selic, BTC">
+            <label>Classe</label>
+            <select id="invClasse">
+                <option>Renda Fixa</option>
+                <option>Ações</option>
+                <option>Croptomoedas</option>
+            </select>
+        </div>
+    </div>
+
+
+    <div class="toast" id="toast"></div>
+    <script src="../js/common.js"></script>
+    <script src="../js/investimento.js"></script>
+</body>
+</html>
