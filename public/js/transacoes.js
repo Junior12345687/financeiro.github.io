@@ -190,14 +190,14 @@ function atualizarResumo(){
     document.getElementById('resumoSaidas').textContent = formatarMoeda(saidas);
     document.getElementById('resumoSaldo').textContent = formatarMoeda(saldo);
     document.getElementById('resumoSaldo').style.color = saldo >= 0 ? '#10b981' : '#ef4444';
-    document.getElementById('resumoSaldo').textContent = transacoesFiltradas.length;
+    document.getElementById('resumoQtd').textContent = transacoesFiltradas.length;
 }
 
-function abrirModal(id = null){
-    transcoeEditandoId = id;
+function abrirModal(id = null) {
+    transacaoEditandoId = id;
     const titulo = document.getElementById('modalTitulo');
 
-    if(id){
+    if (id) {
         const t = transacoes.find(x => x.id === id);
         if (!t) return;
         titulo.textContent = 'Editar Transação';
@@ -207,15 +207,77 @@ function abrirModal(id = null){
         document.getElementById('categoria').value = t.categoria;
         document.getElementById('data').value = t.data;
     } else {
-        titulo.textContent = 'Nova Transção';
+        titulo.textContent = 'Nova Transação';
         document.getElementById('desc').value = '';
         document.getElementById('valor').value = '';
         document.getElementById('tipo').value = 'entrada';
-        document.getElementById('categoria').valor = 'Salário';
-        document.getElementById('data').value = new Date().toDateString().split('T')[0];
+        document.getElementById('categoria').value = 'Salário';
+        document.getElementById('data').value = new Date().toISOString().split('T')[0];
     }
 
     document.getElementById('modal').classList.add('active');
     setTimeout(() => document.getElementById('desc').focus(), 100);
 }
 
+function fecharModal() {
+    document.getElementById('modal').classList.remove('active');
+    transcoeEditandoId = null;
+}
+
+function salvarTransacao() {
+    const descricao = document.getElementById('desc').value.trim();
+    const valor = parseFloat(document.getElementById('valor').value);
+    const tipo = document.getElementById('tipo').value;
+    const categoria = document.getElementById('categoria').value;
+    const data = document.getElementById('data').value;
+
+    if(!descricao) return mostrarToast('Informe uma descrição', true);
+    if(isNaN(valor) || valor <= 0 ) return mostrarToast('Informe um valor valido.', true);
+    if(!data) return mostrarToast('informe uma data.', true);
+
+    if(transacaoEditandoId){
+        const idx = transacoes.findIndex(t => t.id === transacaoEditandoId);
+        if(idx !== -1){
+            transacoes[idx] = {...transacoes[idx], descricao, valor, tipo, categoria, data};
+            mostrarToast('Transação atualizada!');
+        }else {
+            transacoes.push({
+                id: Date.now() + Math.floor(Math.random() * 1000),
+                descricao, valor, tipo, categoria, data
+            });
+            mostrarToast('Transação adicionada!');
+        }
+
+        salvarTransacoes(transacoes);
+        preencherCategorias();
+        fecharModal();
+        aplicarFiltros();
+    }
+}
+
+function editarTranscao(id){ abrirModal(id); }
+
+function exportarCSV() {
+    if( transacoesFiltradas.length === 0 ) {
+        return mostrarToast('Nenhuma transação para exportar.', true);
+    }
+
+    const headers = ['Data', 'Descrição', 'Categoria', 'Tipo', 'Valor'];
+    const linhas = transacoesFiltradas.map(t => [
+        t.data,
+        `"${t.descricao.replace(/"/g, '""')}"`,
+        t.categoria,
+        t.tipo === 'entrada' ? 'Entrada' : 'Saída',
+        t.valor.toFixed(2).replace('.', ',')
+    ]);
+
+    const csv = [headers.join(';'), ...linhas.map(l => l.join(';'))].join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `transacoes_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    mostrarToast('CSV exportado!');
+}
