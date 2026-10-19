@@ -17,7 +17,7 @@ form.addEventListener('submit', async (e) => {
         return mostrar('As senhas não coinciden', 'red');
     }
 
-    if(password.lengt < 6) {
+    if(password.length < 6) {
         return mostrar('A senha deve conter pelo menos 6 caracteres.', 'red');
     }
 

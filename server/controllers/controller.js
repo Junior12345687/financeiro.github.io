@@ -14,6 +14,7 @@ const login = async (req, res) => {
     }
 
     const user = await User.findOne({where: {name}});
+
     if(!user){
       return res.status(401).json({error: 'Credencias invalidas.'});
     }
@@ -23,9 +24,16 @@ const login = async (req, res) => {
       return res.status(401).json({error: 'Credencias invalidas'});
     }
 
+    const token = jwt.sign(
+      {id: user.id, name: user.name},
+      process.eventNames.JWT_SECRET || 'segredo_dev',
+      {expiresIn: '1d'}
+    );
+
     return res.status(200).json({
       success: true,
       messge: 'Login realizado com sucesso.',
+      token,
       user: {id: user.id, name: user.name, email: user.email}
     });
 
@@ -51,8 +59,15 @@ const cadastro = async (req, res) => {
     if (password !== confirmar)
       return res.status(400).json({ error: 'Senhas não conferem' });
 
-    // const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password });
+    const existe = await User.findOne({ where: { name } });
+    if (existe)
+      return res.status(409).json({ error: 'Nome já cadastrado.' });
+
+    const hash = await bcrypt.hash(password, 10);
+
+    // ✅ CORREÇÃO AQUI: password: hash (não password puro)
+    await User.create({ name, email, password: hash });
+    res.redirect('/login?sucess=1');
 
     return res.status(201).json({
       success: true,
@@ -64,7 +79,6 @@ const cadastro = async (req, res) => {
     return res.status(500).json({ error: 'Erro ao criar usuário.' });
   }
 };
-
 const listar = async (req, res) => {
   try {
     const users = await User.findAll({ attributes: ['id', 'name', 'email'] });

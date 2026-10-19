@@ -1,39 +1,46 @@
-const form = document('login-Form');
-const mensagem = document('mensagem');
+const form = document.getElementById('login-Form');
+const mensagem = document.getElementById('mensagem');
 
 form.addEventListener('submit', async (e) => {
-    e.preventeDefault();
+    e.preventDefault();
 
     const name = document.getElementById('name').value.trim();
     const password = document.getElementById('password').value.trim();
 
     if(!name || !password){
-        mensagem.textConten = 'Preencha nome e senha';
-        mensagem.style.color = 'red';
-        return;
+        return mostrar('Preecha todos os campos.', 'blue');
     }
 
-    try{
+    if(password.length < 6) {
+        return mostrar('A senha deve conter 6 caracteres', 'red');
+    }
+
+    try {
+
         const response = await fetch('/api/login', {
             method: 'POST',
-            headers: {'Content-"Type': 'application/json'},
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({name, password})
         });
-
-        const data = await response.json();
+        
+        const data = await response.json().catch(() => ({}));
 
         if(!response.ok){
-            mensagem.textContent = data.error;
-            mensagem.style.color = 'red';
-            return;
+            return mostrar(data.mensagem || 'Nome ou senha incorretos',  'red');
         }
 
-        localStorage.setItem('usuario', JSON.stringify(data.user));
-        window.localStorage.href = '/dashboard.html';
+        mostrar('Login realizado! Redirecionando...', 'gren');
 
-    } catch(erro){
-        mensagem.textContent = 'Error de conexão com o servidor.';
-        mensagem.style.color = 'red';
+        setTimeout(() => {
+            window.location.href = '/dashboard.html?sucess=1';
+        }, 1500);
+
+    } catch(error){
+        mostrar('Error de conexão com o servidor.', 'blue');
     }
-
 });
+
+function mostrar(texto, cor){
+    mensagem.textContent = texto;
+    mensagem.style.color = cor;
+}

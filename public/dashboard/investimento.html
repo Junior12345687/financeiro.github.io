@@ -136,7 +136,20 @@
                 <option>Renda Fixa</option>
                 <option>Ações</option>
                 <option>Croptomoedas</option>
+                <option>FIIS</option>
+                <option>Outros</option>
             </select>
+
+            <label>Valor Investido (R$)</label>
+            <input type="number" id="invInvestido" step="0.01" min="0.01" placeholder="0,00">
+
+            <label>Valor Atual (R$)</label>
+            <input type="number" id="invAtual" step="0.01" min="0" placeholder="0,00">
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="fecharModalInvestimento()">Cancelar</button>
+                <button class="btn-save" onclick="salvarInvestimento()">Salvar</button>
+            </div>
         </div>
     </div>
 
