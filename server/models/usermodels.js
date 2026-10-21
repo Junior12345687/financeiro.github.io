@@ -1,7 +1,7 @@
 const {DataTypes, DATE, where} = require('sequelize');
 const sequelize = require('../config/database');
 
-const User = sequelize.define('User', {
+const user = sequelize.define('User', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -26,15 +26,10 @@ const User = sequelize.define('User', {
         allowNull:false,
         defaultValue: 'visualizador'
     },
-    avatar_iniciais: {
-        type: DataTypes.STRING(2),
-        allowNull: false,
-        validate: {
-            is: {
-                args: /^[A-Za-zÀ-ÿ]{2}$/,
-            }
-        }
-    },
+    // avatar_iniciais: {
+    //     type: DataTypes.STRING(2),
+    //     allowNull: false,
+    // },
     // ativo: {
     //     type:DataTypes.BOOLEAN,
     //     allowNull: false,
@@ -42,11 +37,12 @@ const User = sequelize.define('User', {
     // }
 
 }, {
+    tableName: 'user',
     timestamps: false,
-    tableName: 'users',
+    
 });
 
-const Empresas = sequelize.define('Empresas', {
+const empresas = sequelize.define('Empresas', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -66,7 +62,7 @@ const Empresas = sequelize.define('Empresas', {
     tableName: 'empresa',
 });
 
-const Categorias = sequelize.define('Categorias',{
+const categorias = sequelize.define('Categorias',{
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -94,4 +90,4 @@ const Categorias = sequelize.define('Categorias',{
     timestamps:false,
     tableName:'categoria'
 });
-module.exports = User, Empresas, Categorias;
+module.exports = user, empresas, categorias;

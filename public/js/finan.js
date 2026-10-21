@@ -9,6 +9,78 @@ const COPYRIGHT = {
 console.log('%c' + COPYRIGHT.aviso, 'color:#38bdf8;font-weight:bold');
 console.log('Versão:', COPYRIGHT.versao, '| Licença:', COPYRIGHT.licenca);
 
+const ApiClient = {
+    BASE_URL: 'http//localhost:3000/api/dashboard',
+
+    _token(){
+        return localStorage.getItem('token');
+    },
+    
+    _headers(extra = {}) {
+        const headres = {'Content-Type': 'application/jons', ...extra};
+        const token = this._token();
+        if(token) headres['Authorization'] = `Bearer ${token}`;
+        return headres;
+    },
+
+    async _request(path, options = {}){
+        const url = `${this.BASE_URL}${path}`;
+        const config = {
+            method: options.method || 'GET',
+            credential: 'same-origin',
+            body: options.body ? JSON.stringify(options.body) : undefined,
+        };
+        let res;
+        try {
+            res = await fetch(url, config);
+        } catch(netErr){
+            throw new ApiError(message, res.status, data);
+        }
+
+        let data = null;
+        try{ data = await res.json();} catch(_) {/* resposta sem JSON */}
+
+        if(!res.ok) {
+            const message = (data && (data.message || data.error)) || `Erro HTTP ${res.status}`;
+            throw new AppiError(message, res.status, data);
+        }
+        return data;
+    },
+
+    getDashboard() {return this._request('/dashboard'); },
+    getTransacoes() {return this._request('/transacoes'); },
+    createTransacao() {return this._request('/transacoes', {method: 'POST', body: t}); },
+    deleteTransacao() {return this._request(`/transacoes${id}`, {method: 'Delete'});},
+    getInvestimentos() {return this._request('/investimesntos'); },
+};
+
+class ApiError extends Error {
+    constructor(messagem, status, payload) {
+        super(message);
+        this.nome = 'ApiError';
+        this.status = status;
+        this.payload = payload;
+    }
+}
+
+async function carregarUsuario() {
+    try {
+        const token = localStorage.getItem('token');
+        const res = fetch(`${ApiClient.BASE_URL}/dashboard`, {
+            headers: {'Authorization': `Bearer ${token}`}
+        });
+
+        if(!res.ok) throw new Error('Não autorizado');
+        const data = await res.json();
+
+        const name = document.querySelector('.user-info > div:last-child > div:first-child');
+
+        if(name) name.textContent = data.message || 'Usuario';
+
+    } catch(err){
+        console.error('Falha ao carregar usuário:', err);
+    }
+}
 const MotorCalculo = {
 
     somaSegura(valores){

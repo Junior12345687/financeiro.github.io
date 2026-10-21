@@ -7,6 +7,9 @@ form.addEventListener('submit', async (e) => {
     const name = document.getElementById('name').value.trim();
     const password = document.getElementById('password').value.trim();
 
+    console.log('🔵 [1] Submit disparado');
+    console.log('🔵 [2] Dados enviados:', {name, password});
+
     if(!name || !password){
         return mostrar('Preecha todos os campos.', 'blue');
     }
@@ -15,32 +18,40 @@ form.addEventListener('submit', async (e) => {
         return mostrar('A senha deve conter 6 caracteres', 'red');
     }
 
-    try {
-
-        const response = await fetch('/api/login', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({name, password})
-        });
+    async function Login(name, password) {
         
-        const data = await response.json().catch(() => ({}));
+        try{
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'aplication/json'},
+                body: JSON.stringify({name, password})
+            });
 
-        if(!response.ok){
-            return mostrar(data.mensagem || 'Nome ou senha incorretos',  'red');
+            console.log('🟢 [3] Status', response.status, '| ok:', response.ok);
+
+            const data = await response.json().catch(() => {});
+            console.log('🟢 [6] Resposta:', data);
+
+            if(!response){
+                console.log('🔴[7] Erro ao efetuar o login');
+                alert(data.error || 'Erro no login');
+                return;
+            }
+
+            localStorage.setItem('token', data.token);
+            console.log('🟢 [8] token salvo no LocalStorage:', localStorage.getItem('token'));
+
+            console.log('🟢 [9] Redirecionando para o dashboard.html');
+            window.location.href = '/dashboard.html';
+
+        } catch(err){
+            console.log('🔴 Error:', err);
+            alert('Falha de conexão: ' + err.mensage);
         }
-
-        mostrar('Login realizado! Redirecionando...', 'gren');
-
-        setTimeout(() => {
-            window.location.href = '/dashboard.html?sucess=1';
-        }, 1500);
-
-    } catch(error){
-        mostrar('Error de conexão com o servidor.', 'blue');
     }
 });
 
-function mostrar(texto, cor){
-    mensagem.textContent = texto;
-    mensagem.style.color = cor;
-}
+// function mostrar(texto, cor){
+//     mensagem.textContent = texto;
+//     mensagem.style.color = cor;
+// }
