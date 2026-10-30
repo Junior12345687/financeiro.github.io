@@ -10,14 +10,14 @@ console.log('%c' + COPYRIGHT.aviso, 'color:#38bdf8;font-weight:bold');
 console.log('Versão:', COPYRIGHT.versao, '| Licença:', COPYRIGHT.licenca);
 
 const ApiClient = {
-    BASE_URL: 'http//localhost:3000/api/dashboard',
+    BASE_URL: 'http://localhost:3000',
 
     _token(){
         return localStorage.getItem('token');
     },
     
     _headers(extra = {}) {
-        const headres = {'Content-Type': 'application/jons', ...extra};
+        const headres = {'Content-Type': 'application/json', ...extra};
         const token = this._token();
         if(token) headres['Authorization'] = `Bearer ${token}`;
         return headres;
@@ -27,9 +27,11 @@ const ApiClient = {
         const url = `${this.BASE_URL}${path}`;
         const config = {
             method: options.method || 'GET',
-            credential: 'same-origin',
+            credentials: 'include',
+            headers: this._headers(),
             body: options.body ? JSON.stringify(options.body) : undefined,
         };
+
         let res;
         try {
             res = await fetch(url, config);
@@ -42,7 +44,7 @@ const ApiClient = {
 
         if(!res.ok) {
             const message = (data && (data.message || data.error)) || `Erro HTTP ${res.status}`;
-            throw new AppiError(message, res.status, data);
+            throw new ApiError(message, res.status, data);
         }
         return data;
     },
@@ -62,15 +64,18 @@ class ApiError extends Error {
         this.payload = payload;
     }
 }
-
+/* ============================================================
+    CARREGAR USUÁRIO AUTENTICADO (rota /dashboard)
+   ============================================================ */
 async function carregarUsuario() {
     try {
         const token = localStorage.getItem('token');
-        const res = fetch(`${ApiClient.BASE_URL}/dashboard`, {
+        const res = await fetch(`${ApiClient.BASE_URL}/api/dashboard`, {
             headers: {'Authorization': `Bearer ${token}`}
         });
 
         if(!res.ok) throw new Error('Não autorizado');
+
         const data = await res.json();
 
         const name = document.querySelector('.user-info > div:last-child > div:first-child');
@@ -81,6 +86,10 @@ async function carregarUsuario() {
         console.error('Falha ao carregar usuário:', err);
     }
 }
+
+/* ============================================================
+    MOTOR DE CÁLCULO (mantido, com pequenas correções)
+   ============================================================ */
 const MotorCalculo = {
 
     somaSegura(valores){
@@ -187,13 +196,6 @@ const MotorCalculo = {
    ============================================================ */
 
 let transacoes = [
-    {data: '2026-01-15', desc: 'Salário', cat: 'Salário', tipo: 'entrada', valor: 7500},
-    {data: '2026-01-14', desc: 'Supermercado', cat: 'Alimentação', tipo: 'saida', valor: 480 },
-    { data: '2025-01-13', desc: 'Uber', cat: 'Transporte', tipo: 'saida', valor: 85 },
-    { data: '2025-01-12', desc: 'Aluguel', cat: 'Moradia', tipo: 'saida', valor: 1800 },
-    { data: '2025-01-11', desc: 'Cinema', cat: 'Lazer', tipo: 'saida', valor: 120 },
-    { data: '2025-01-10', desc: 'Dividendos', cat: 'Investimentos', tipo: 'entrada', valor: 320 },
-    { data: '2025-01-09', desc: 'Internet', cat: 'Outros', tipo: 'saida', valor: 120 },
 ];
 
 const investimentos = 15000;

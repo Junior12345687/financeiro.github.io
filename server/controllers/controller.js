@@ -2,6 +2,7 @@ const User = require('../models/usermodels');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
+const user = require('../models/usermodels');
 
 
 const login = async (req, res) => {
@@ -13,7 +14,8 @@ const login = async (req, res) => {
       return res.status(400).json({error:'Nome e senha são obrigatorios'});
     }
 
-    user = await User.findOne({where: {name}});
+    let user = await User.findOne({where: {name}});
+    // user = null;
 
     if(!user){
       return res.status(401).json({error: 'Credencias invalidas.'});
@@ -26,9 +28,10 @@ const login = async (req, res) => {
 
     const token = jwt.sign(
       {id: user.id, name: user.name},
-      process.eventNames.JWT_SECRET || 'segredo_dev',
+      process.env.JWT_SECRET || 'segredo_dev',
       {expiresIn: '1d'}
     );
+
 
     return res.status(200).json({
       success: true,

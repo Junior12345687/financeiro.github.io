@@ -15,8 +15,10 @@ app.use(helmet({
 }));
 
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
-    credentials: true
+    origin: 'null',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
@@ -41,12 +43,14 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.get('/api/users/:id', async () => {
-    const [rows] = await sequelize.query(
-        'SELECT name, inicias, plano FROM usuarius WHERE id = ?',
-        [req.params.id]
-    );
-    res.json(rows[0]);
+app.get('/api/users/:id', async (req, res, next) => {
+    try {
+        const [rows] = await sequelize.query(
+            'SELECT name, inicias, plano FROM usuarius WHERE id = ?',
+            { replacements: [req.params.id]}
+        );
+        res.json(rows[0] || {});
+    } catch(err){}
 });
 
 const startServer = async () => {
